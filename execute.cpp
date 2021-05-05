@@ -417,9 +417,17 @@ void execute() {
           break;
         case STRBR:
           // need to implement
+          stats.numRegReads += 2;
+          stats.numMemWrites += 1;
+          addr = rf[ld_st.instr.ld_st_reg.rn] + rf[ld_st.instr.ld_st_reg.rm];
+          dmem.write(addr, rf[ld_st.instr.ld_st_reg.rt]);
           break;
         case LDRBR:
           // need to implement
+          stats.numRegReads += 2;
+          stats.numRegWrites += 1;
+          addr = rf[ld_st.instr.ld_st_reg.rn] + rf[ld_st.instr.ld_st_reg.rm];
+          rf.write(ld_st.instr.ld_st_reg.rt, dmem[addr]);
           break;
       }
       break;
@@ -430,10 +438,31 @@ void execute() {
       switch(misc_ops) {
         case MISC_PUSH:
           // need to implement
-          misc.instr.push.
+          // misc.instr.push.reg_list
+          // misc.instr.push.m - needs to be shifted and or'ed with register list
+          int total = 1;
+          for(int i = 0; i < 16; i++){
+            if(total & misc.instr.push.reg_list != 0){
+                dmem.write(SP, rf[i]);
+                stats.numMemWrites++;
+                stats.numRegReads++;
+                rf.write(SP_REG, SP + 4);
+            }
+            total << 1;
+          }
           break;
         case MISC_POP:
           // need to implement
+          int total = 1;
+          for(int i = 0; i < 16; i++){
+            if(total & misc.instr.push.reg_list != 0){
+                rf.write(rf[i], SP);
+                stats.numRegWrites++;
+                stats.numMemReads++;
+                rf.write(SP_REG, SP + 4);
+            }
+            total << 1;
+          }
           break;
         case MISC_SUB:
           // functionally complete, needs stats
@@ -459,7 +488,7 @@ void execute() {
       if (checkCondition(cond.instr.b.cond)){
         rf.write(PC_REG, PC + 2 * signExtend8to32ui(cond.instr.b.imm) + 2);
         stats.numRegWrites += 1;
-        stats.numRegWrites += 1;
+        stats.numRegReads += 1;
       }
       break;
 
@@ -467,16 +496,21 @@ void execute() {
       // Essentially the same as the conditional branches, but with no
       // condition check, and an 11-bit immediate field
       decode(uncond);
+      rf.write(PC_REG, PC + 2 * signExtend11to32ui(cond.instr.b.imm) + 2);
+      stats.numRegWrites += 1;
+      stats.numRegReads += 1;
       break;
     case LDM:
       decode(ldm);
       // need to implement
-      
-      
+
+
       break;
     case STM:
       decode(stm);
       // need to implement
+      //stm.instr.stm.reg_list;
+      //reg_list = 01001000000000; r1, r4
       break;
 
 
@@ -505,6 +539,8 @@ void execute() {
       // needs stats
       decode(addsp);
       rf.write(addsp.instr.add.rd, SP + (addsp.instr.add.imm*4));
+      stats.numRegWrites += 1;
+      stats.numRegReads += 1;
       break;
     default:
       cout << "[ERROR] Unknown Instruction to be executed" << endl;
