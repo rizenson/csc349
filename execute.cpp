@@ -188,6 +188,7 @@ static int checkCondition(unsigned short cond) {
 }
 
 void execute() {
+  short totalCalc = 1;
   Data16 instr = imem[PC];
   Data16 instr2;
   Data32 temp(0); // Use this for STRB instructions
@@ -440,28 +441,28 @@ void execute() {
           // need to implement
           // misc.instr.push.reg_list
           // misc.instr.push.m - needs to be shifted and or'ed with register list
-          int total = 1;
-          for(int i = 0; i < 16; i++){
-            if(total & misc.instr.push.reg_list != 0){
+          totalCalc = 1;
+          for(i = 0; i < 16; i++){
+            if((totalCalc & misc.instr.push.reg_list) != 0){
                 dmem.write(SP, rf[i]);
                 stats.numMemWrites++;
                 stats.numRegReads++;
                 rf.write(SP_REG, SP + 4);
             }
-            total << 1;
+            totalCalc = totalCalc << 1;
           }
           break;
         case MISC_POP:
           // need to implement
-          int total = 1;
-          for(int i = 0; i < 16; i++){
-            if(total & misc.instr.push.reg_list != 0){
+          totalCalc = 1;
+          for(i = 0; i < 16; i++){
+            if((totalCalc & misc.instr.push.reg_list) != 0){
                 rf.write(rf[i], SP);
                 stats.numRegWrites++;
                 stats.numMemReads++;
                 rf.write(SP_REG, SP + 4);
             }
-            total << 1;
+            totalCalc = totalCalc << 1;
           }
           break;
         case MISC_SUB:
