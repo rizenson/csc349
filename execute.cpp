@@ -280,6 +280,8 @@ void execute() {
           stats.numRegReads += 1;
           break;
         case ALU_CMP:
+          setAllFlags(rf[alu.instr.cmp.rdn] - alu.instr.cmp.imm);
+          setCarryOverflow(rf[alu.instr.cmp.rdn], alu.instr.cmp.imm, OF_SUB);
           stats.numRegReads += 2;
           break;
         case ALU_ADD8I:
@@ -339,7 +341,9 @@ void execute() {
       switch(dp_ops) {
         case DP_CMP:
           // need to implement
-          stats.numRegReads += 2;
+          setAllFlags(rf[dp.instr.DP_Instr.rdn] - rf[dp.instr.DP_Instr.rm]);
+          setCarryOverflow(rf[dp.instr.DP_Instr.rdn], rf[dp.instr.DP_Instr.rm], OF_SUB);
+          stats.numRegReads += 4;
           break;
       }
       break;
@@ -455,7 +459,21 @@ void execute() {
         case MISC_POP:
           // need to implement
           totalCalc = 1;
-          for(i = 0; i < 16; i++){
+          for(i = 0; i < 14; i++){
+            if((totalCalc & misc.instr.pop.reg_list) != 0){
+                rf.write(i, SP);
+                rf.write(SP_REG, SP + 4);
+                stats.numRegWrites+=2;
+                stats.numMemReads++;
+            }
+            totalCalc = totalCalc << 1;
+          }
+          if(misc.instr.pop.m == 1){ // ask in office hours
+              rf.write(PC_REG, SP); 
+              rf.write(SP_REG, SP + 4);
+              stats.numRegWrites += 2;
+          }
+          /*for(i = 0; i < 16; i++){
             if((totalCalc & misc.instr.push.reg_list) != 0){
                 rf.write(rf[i], SP);
                 stats.numRegWrites++;
@@ -463,7 +481,7 @@ void execute() {
                 rf.write(SP_REG, SP + 4);
             }
             totalCalc = totalCalc << 1;
-          }
+          }*/
           break;
         case MISC_SUB:
           // functionally complete, needs stats
