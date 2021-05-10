@@ -282,7 +282,7 @@ void execute() {
         case ALU_CMP:
           setAllFlags(rf[alu.instr.cmp.rdn] - alu.instr.cmp.imm);
           setCarryOverflow(rf[alu.instr.cmp.rdn], alu.instr.cmp.imm, OF_SUB);
-          stats.numRegReads += 2;
+          stats.numRegReads += 4;
           break;
         case ALU_ADD8I:
           // needs stats and flags
@@ -307,7 +307,7 @@ void execute() {
       break;
     case BL: 
       // This instruction is complete, nothing needed here
-      bl_ops = decode(blupper);
+      bl_ops = decode(blupper); // office hours - where do we edit branches taken
       if (bl_ops == BL_UPPER) {
         // PC has already been incremented above
         instr2 = imem[PC];
@@ -343,7 +343,7 @@ void execute() {
           // need to implement
           setAllFlags(rf[dp.instr.DP_Instr.rdn] - rf[dp.instr.DP_Instr.rm]);
           setCarryOverflow(rf[dp.instr.DP_Instr.rdn], rf[dp.instr.DP_Instr.rm], OF_SUB);
-          stats.numRegReads += 4;
+          stats.numRegReads += 4; 
           break;
       }
       break;
@@ -468,20 +468,11 @@ void execute() {
             }
             totalCalc = totalCalc << 1;
           }
-          if(misc.instr.pop.m == 1){ // ask in office hours
-              rf.write(PC_REG, SP); 
+          if(misc.instr.pop.m == 1){
+              rf.write(PC_REG, SP);
               rf.write(SP_REG, SP + 4);
               stats.numRegWrites += 2;
           }
-          /*for(i = 0; i < 16; i++){
-            if((totalCalc & misc.instr.push.reg_list) != 0){
-                rf.write(rf[i], SP);
-                stats.numRegWrites++;
-                stats.numMemReads++;
-                rf.write(SP_REG, SP + 4);
-            }
-            totalCalc = totalCalc << 1;
-          }*/
           break;
         case MISC_SUB:
           // functionally complete, needs stats
