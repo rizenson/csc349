@@ -441,38 +441,74 @@ void execute() {
     case MISC:
       misc_ops = decode(misc);
       switch(misc_ops) {
-        case MISC_PUSH:
+         case MISC_PUSH:
           // need to implement
-          // misc.instr.push.reg_list
-          // misc.instr.push.m - needs to be shifted and or'ed with register list
+          //Check Number of Bits
           totalCalc = 1;
-          for(i = 0; i < 16; i++){
+          BitCount = 0;
+          for(i = 0; i < 14; i++){
             if((totalCalc & misc.instr.push.reg_list) != 0){
-                dmem.write(SP, rf[i]);
-                stats.numMemWrites++;
-                stats.numRegReads++;
-                rf.write(SP_REG, SP + 4);
+              BitCount+=1;
             }
             totalCalc = totalCalc << 1;
           }
+          if(misc.instr.push.m == 1){
+            BitCount++;
+          }
+
+          //PUSH
+          addr = SP - 4*BitCount;
+          totalCalc = 1;
+          for(i = 0; i < 14; i++){
+            if((totalCalc & misc.instr.push.reg_list) != 0){
+                dmem.write(addr, rf[i]);
+                addr += 4;
+                stats.numMemWrites++;
+                stats.numRegReads++;
+            }
+            totalCalc = totalCalc << 1;
+          }
+          if(misc.instr.push.m == 1){
+            dmem.write(addr, LR);
+            addr += 4;
+            stats.numRegReads++;
+            stats.numMemWrites++;
+          }
+          rf.write(SP_REG, SP - 4*BitCount);
+          stats.numRegReads++;
           break;
         case MISC_POP:
           // need to implement
           totalCalc = 1;
+          BitCount = 0;
           for(i = 0; i < 14; i++){
             if((totalCalc & misc.instr.pop.reg_list) != 0){
-                rf.write(i, SP);
-                rf.write(SP_REG, SP + 4);
-                stats.numRegWrites+=2;
+              BitCount+=1;
+            }
+            totalCalc = totalCalc << 1;
+          }
+          if(misc.instr.pop.m == 1){
+            BitCount++;
+          }
+
+          addr = SP;
+          totalCalc = 1;
+          for(i = 0; i < 14; i++){
+            if((totalCalc & misc.instr.pop.reg_list) != 0){
+                rf.write(i, dmem[addr]);
+                addr += 4;
+                stats.numRegWrites++;
                 stats.numMemReads++;
             }
             totalCalc = totalCalc << 1;
           }
           if(misc.instr.pop.m == 1){
-              rf.write(PC_REG, SP);
-              rf.write(SP_REG, SP + 4);
-              stats.numRegWrites += 2;
+              rf.write(PC_REG, dmem[addr]);
+              stats.numRegWrites++;
+              stats.numMemReads++;
           }
+          rf.write(SP_REG, SP + 4*BitCount);
+          stats.numRegReads++;
           break;
         case MISC_SUB:
           // functionally complete, needs stats
