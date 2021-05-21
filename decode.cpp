@@ -479,7 +479,7 @@ int decode (const LDRL_Type data) {
   // 315: add code to print ldr
   if(opts.instrs){
     cout << "ldr r" << data.instr.ldrl.rt << ", #" << setbase(10) << data.instr.ldrl.imm*4 << endl;
-  }
+  } 
   return LDRL;
 }
 
