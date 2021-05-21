@@ -81,7 +81,7 @@ ALU_Ops decode (const ALU_Type data) {
     // 315: insert code here to print lsls instruction
     // lsli r1, r1
     if (opts.instrs) { 
-      cout << "lsl r" << data.instr.lsli.rd  << ", r" << data.instr.addr.rm << endl;
+      cout << "lsls r" << data.instr.lsli.rd  << ", r" << data.instr.lsli.rm << ", #"<< data.instr.lsli.imm << endl;
     }
     return ALU_LSLI;
   }
@@ -186,7 +186,7 @@ SP_Ops decode (const SP_Type data) {
   else if (data.instr.add.op == 0) {
     // Here you'll need to SP_ADD similar to above
     if (opts.instrs) { 
-      cout << "add r" << data.instr.add.rd << ", r" << data.instr.add.rm << endl;
+      cout << "add sp, sp, r" << data.instr.add.rm << endl;
     }
     return SP_ADD;
   }
@@ -478,8 +478,8 @@ int decode (const STM_Type data) {
 int decode (const LDRL_Type data) {
   // 315: add code to print ldr
   if(opts.instrs){
-    cout << "ldr r" << data.instr.ldrl.rt << ", #" << setbase(10) << data.instr.ldrl.imm*4 << endl;
-  } 
+    cout << "ldr r" << data.instr.ldrl.rt << ", [pc, #" << setbase(10) << data.instr.ldrl.imm*4 << "]" << endl;
+  }
   return LDRL;
 }
 
