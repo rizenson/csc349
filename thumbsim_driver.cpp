@@ -2,6 +2,9 @@
 
 template<>
 void Memory<Data8, Data32>::write(const unsigned int addr, const Data32 data) {
+  // data is in native format
+  //   if little-endian, 3210 (MSB=3)
+  // memory is in big-endian format (0123, MSB=0)
   int i;
   unsigned int myAddr = addr - base;
   if (size() < myAddr + 4) {
@@ -23,7 +26,7 @@ void Memory<Data8, Data32>::write(const unsigned int addr, const Data32 data) {
 
 template<>
 void Memory<Data16, Data16>::write(const unsigned int addr, const Data16 data) {
-  /* data is in native format */
+  // data is in native format
   int i;
   unsigned short myAddr = addr - base;
   if (size() < myAddr + 2) {
@@ -45,7 +48,7 @@ void Memory<Data16, Data16>::write(const unsigned int addr, const Data16 data) {
 template<>
 void Memory<Data32, Data32>::write(const unsigned int addr, const Data32 data) {
   unsigned int myAddr = addr - base;
-  /* cout << hex << addr << ": " << data << endl; */
+  // cout << hex << addr << ": " << data << endl;
   m[myAddr] = data;
 }
 
@@ -96,8 +99,32 @@ void Memory<Data32, Data32>::dump(DataType dt) const {
   }
 }
 
-
-bool Cache::access(unsigned int address) {
+// CPE 315: You must implement and call this function for each 
+// memory address (dmem only) accessed by the program. It should return 
+// true for a cache hit and false for a cache miss, and on a cache miss, 
+// should update the cache tags. The "entries" vector contains the cache
+// tags, so if you want to put the tag "t" into cache block "b", then
+// evaluate "entries[b] = t;". The locals you have available to help
+// you make this decision are "blocksize" (in bytes) and "size" (total
+// cache size in blocks). You should also update the "hits" and
+// "misses" counters.
+bool Cache::access(unsigned int address) { 
+  unsigned int byteOffset = address % 2;
+  address = address >> 2;
+  unsigned int logOfBlock = log2(blocksize);
+  unsigned int wordOffset = address % logOfBlock;
+  address = address >> logOfBlock;
+  unsigned int lengthOfIndex = 256 / (4*blocksize);
+  unsigned int logofIndex = log2(lengthOfIndex);
+  unsigned int index = address % logofIndex;
+  address = address >> logofIndex;
+  unsigned int tag = address;
+  if(entries[index] == tag){
+    hits++;
+    return true;
+  }
+  misses++;
+  entries[index] = tag;
   return false;
 }
 
@@ -123,4 +150,3 @@ unsigned int swizzle(unsigned int d) {
           ((d << 8)  & 0xff0000) |
           ((d << 24) & 0xff000000));
 }
-
