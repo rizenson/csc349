@@ -114,7 +114,7 @@ bool Cache::access(unsigned int address) {
   unsigned int logOfBlock = log2(blocksize);
   unsigned int wordOffset = address % logOfBlock;
   address = address >> logOfBlock;
-  unsigned int lengthOfIndex = 256 / (4*blocksize);
+  unsigned int lengthOfIndex = 256 / blocksize;
   unsigned int logofIndex = log2(lengthOfIndex);
   unsigned int index = address % logofIndex;
   address = address >> logofIndex;
