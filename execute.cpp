@@ -553,7 +553,7 @@ void execute() {
       // needs stats
       stats.numRegReads += 1;
       if (checkCondition(cond.instr.b.cond)){
-        if((cond.instr.b.imm - PC)<0){
+        if(cond.instr.b.imm > 0 && ( 2 * signExtend8to32ui(cond.instr.b.imm)+2)<=PC){
           stats.numForwardBranchesTaken++;
         }
         else{
@@ -563,7 +563,7 @@ void execute() {
         stats.numRegWrites += 1;
       }
       else{
-        if((cond.instr.b.imm - PC)<0){
+        if(cond.instr.b.imm > 0 && (2 * signExtend8to32ui(cond.instr.b.imm)+2)<=PC){
           stats.numForwardBranchesNotTaken++;
         }
         else{
